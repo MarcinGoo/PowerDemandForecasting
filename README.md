@@ -1,100 +1,96 @@
-﻿# CenyEnergi ⚡📊
+# Power Demand Forecasting in KSE (PSE)
 
-Projekt poświęcony pobieraniu, analizie eksploracyjnej (EDA) oraz modelowaniu i prognozowaniu danych z **Krajowego Systemu Elektroenergetycznego (KSE)** dostarczanych przez **Polskie Sieci Elektroenergetyczne (PSE)**.
+[![pmdarima](https://img.shields.io/badge/pmdarima-2.1-red.svg)](https://alkaline-ml.com/pmdarima/)
+[![XGBoost](https://img.shields.io/badge/XGBoost-3.2-yellow.svg)](https://xgboost.readthedocs.io/)
+[![Business Report](https://img.shields.io/badge/Business_Report%20%26%20ROI-brightgreen.svg)](BUSINESS_REPORT.md)
+
+A business-oriented Data Science & Time Series Forecasting project dedicated to short-term power demand forecasting in the National Power System (KSE) based on data from the Polish Power Grid (PSE).
+
+> Detailed business report with ROI analysis and implementation recommendations: [BUSINESS_REPORT.md](BUSINESS_REPORT.md)
 
 ---
 
-## 📌 Cel Projektu
+## Business Problem and Decision Goal
 
-Głównym celem projektu jest analiza dynamiki zapotrzebowania na energię elektryczną w Polsce, produkcja ze źródeł odnawialnych (fotowoltaika i wiatr) oraz badanie ich wpływu na zapotrzebowanie pokrywane przez konwencjonalne jednostki wytwórcze oraz kształtowanie się cen energii.
+For the transmission system operator (PSE) and energy trading companies, an accurate demand forecast in a 1-3 day horizon (Day-Ahead / Multi-Day Forecast) is crucial. Because renewable energy generation (solar and wind) can be treated as a given constant in short-term planning, forecasting total gross demand allows operators to precisely determine the net load that must be covered by conventional energy sources. 
+
+1. **Optimization of conventional sources**: Accurate forecasting reduces the standby costs of thermal power plants and lowers CO2 emissions.
+2. **Balancing RES generation**: The growth in photovoltaic capacity creates a daily net load valley (Duck Curve), requiring high flexibility from balancing units to cover sharp evening peaks.
+3. **Risk pricing in the energy market**: Demand forecasting minimizes risk exposure on the Balancing Market for energy traders.
 
 ---
 
-## 🗂️ Struktura Projektu
+## Model Results and Benchmarking (Test Horizon = 72 Hours)
+
+* **XGBoost ML Regressor** proved to be the best model, reducing the forecast error by **-91.6%** compared to the naive baseline.
+* **MAPE**: 1.59% (Mean Absolute Error = 253.58 MW)
+* **Model Dynamics**: Captured non-linear relationships such as consumer inertia (lag 1 hour) and weekly calendar profiles (lag 168 hours).
+
+---
+
+## Project Structure
 
 ```text
 CenyEnergi/
 ├── data/
 │   ├── raw/
-│   │   └── dane_energetyczne_pse.csv   # Surowe dane pobrane z API PSE
-│   └── processed/                      # Przetworzone zbiory danych i cechy
+│   │   └── pse_energy_data.csv                    # Raw data from PSE API
+│   └── processed/
+│       ├── pse_hourly_data.csv                    # 1h resampled time series
+│       └── future_forecast_48h.csv                # XGBoost generated predictions
 ├── notebooks/
-│   └── 01_pobieranie_i_eda.ipynb       # Analiza eksploracyjna danych (EDA) i wykresy
+│   ├── 01_data_acquisition_and_eda.ipynb          # EDA, Duck Curve, STL decomposition, ADF/KPSS tests
+│   ├── 02_sarimax_modeling.ipynb                  # SARIMAX with RES variables + full residual diagnostics
+│   ├── 03_xgboost_modeling.ipynb                  # Time feature engineering + XGBoost + TimeSeriesSplit
+│   └── 04_model_comparison_and_insights.ipynb     # Model comparison, 48h ahead prediction and business decisions
+├── reports/
+│   ├── executive_summary.md                       # Executive summary and ROI analysis
+│   └── figures/                                   # High-resolution plots (PNG)
+│       ├── 01_duck_curve_profile.png
+│       ├── 02_stl_decomposition.png
+│       ├── 03_sarimax_residuals_diagnostics.png
+│       ├── 04_xgboost_feature_importance.png
+│       ├── 05_multi_model_forecast_comparison.png
+│       ├── 06_hourly_error_distribution.png
+│       └── 07_future_forecast_48h.png
 ├── src/
 │   ├── __init__.py
-│   └── data_fetcher.py                 # Skrypt i moduł do pobierania danych z API PSE
-├── .gitignore                          # Ignorowane pliki i katalogi tymczasowe
-├── README.md                           # Dokumentacja projektu
-└── requirements.txt                    # Zależności bibliotek Python
+│   ├── data_fetcher.py                            # Fetching data from PSE API
+│   ├── future_forecast.py                         # Generator for operational 48h ahead forecast
+│   ├── time_series_utils.py                       # Statistical tests and metrics
+│   └── visualization.py                           # Diagnostic and decomposition plots
+├── scripts/
+│   └── build_notebooks.py                         # Script to execute notebooks
+├── BUSINESS_REPORT.md                             # Full business report and case study
+├── README.md
+└── requirements.txt
 ```
 
 ---
 
-## 📈 Opis Zmiennych
+## Quick Start and Generating a Forecast
 
-| Zmienna | Opis | Jednostka |
-| :--- | :--- | :--- |
-| `dtime` | Znacznik czasu pomiaru | `YYYY-MM-DD HH:MM:SS` |
-| `demand` | Rzeczywiste krajowe zapotrzebowanie na moc | **MW** |
-| `pv` | Generacja z farm fotowoltaicznych | **MW** |
-| `wi` | Generacja z farm wiatrowych | **MW** |
-| `jg` | Generacja jednostek grafikowych / konwencjonalnych | **MW** |
-| `oze_total` | Sumaryczna generacja z OZE (`pv + wi`) | **MW** |
-| `net_demand` | Zapotrzebowanie netto na moc konwencjonalną (`demand - oze_total`) | **MW** |
-
----
-
-## 🌐 Źródło Danych
-
-Dane pobierane są bezpośrednio z publicznego API PSE:
-* **Punkt końcowy:** `https://api.raporty.pse.pl/api/his-wlk-cal`
-* Pobieranie realizowane jest w interwałach czasowych z obsługą paginacji (`nextLink`).
-
----
-
-## 🚀 Szybki Start
-
-### 1. Klonowanie repozytorium
 ```bash
+# 1. Clone the repository
 git clone https://github.com/MarcinGoo/CenyEnergi.git
 cd CenyEnergi
-```
 
-### 2. Utworzenie środowiska wirtualnego
-```bash
+# 2. Activate environment and install packages
 python -m venv venv
-# Linux / WSL / macOS:
-source venv/bin/activate
-# Windows (PowerShell):
-.\venv\Scripts\Activate.ps1
-```
-
-### 3. Instalacja zależności
-```bash
+source venv/bin/activate  # Windows: .\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-```
 
-### 4. Pobieranie danych z API
-Możesz uruchomić skrypt CLI do pobrania najnowszych danych:
-```bash
-python src/data_fetcher.py --days 30 --output data/raw/dane_energetyczne_pse.csv
-```
+# 3. Generate a new forecast for the next 48 hours
+python src/future_forecast.py
 
-### 5. Uruchomienie Jupyter Notebook
-```bash
-jupyter notebook notebooks/01_pobieranie_i_eda.ipynb
+# 4. Run interactive notebooks
+jupyter lab
 ```
 
 ---
 
-## 🗺️ Roadmapa / Kolejne Kroki
-- [x] Automatyzacja pobierania danych z API PSE
-- [x] Wstępna analiza eksploracyjna danych (EDA)
-- [ ] Inżynieria cech czasowych (godzina, dzień tygodnia, święta)
-- [ ] Pobieranie i łączenie z danymi o cenach energii (RCE / TGE)
-- [ ] Modele prognozowania szeregów czasowych (ARIMA/SARIMAX, Prophet, XGBoost/LightGBM, LSTM)
+## Author
 
----
-
-## 👤 Autor
-**Marcin** — [@MarcinGoo](https://github.com/MarcinGoo)
+**Marcin**
+* GitHub: [@MarcinGoo](https://github.com/MarcinGoo)
+* Project prepared as part of a Data Science & Energy Analytics portfolio.
