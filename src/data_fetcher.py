@@ -1,4 +1,4 @@
-﻿import argparse
+import argparse
 import time
 import urllib3
 import requests
@@ -11,14 +11,14 @@ PSE_API_URL = "https://api.raporty.pse.pl/api/his-wlk-cal"
 
 def fetch_pse_history(max_days: int = 30, verbose: bool = True) -> pd.DataFrame:
     """
-    Pobiera dane z API PSE strona po stronie (za pomoca parametru nextLink).
+    Fetches data from the PSE API page by page (using the nextLink parameter).
 
     Args:
-        max_days (int): Maksymalna liczba stron/dni do pobrania.
-        verbose (bool): Czy wyswietlac logi postepu.
+        max_days (int): Maximum number of pages/days to fetch.
+        verbose (bool): Whether to display progress logs.
 
     Returns:
-        pd.DataFrame: Uporzadkowany i oczyszczony DataFrame z danymi energetycznymi.
+        pd.DataFrame: Ordered and cleaned DataFrame with energy data.
     """
     url = PSE_API_URL
     headers = {"User-Agent": "Mozilla/5.0"}
@@ -26,19 +26,19 @@ def fetch_pse_history(max_days: int = 30, verbose: bool = True) -> pd.DataFrame:
     fetched_pages = 0
 
     if verbose:
-        print(f"Rozpoczeto pobieranie danych z PSE (maksymalnie {max_days} dni/stron)...")
+        print(f"Started fetching data from PSE (maximum {max_days} days/pages)...")
 
     while url and fetched_pages < max_days:
         try:
             response = requests.get(url, headers=headers, verify=False, timeout=15)
         except requests.RequestException as e:
             if verbose:
-                print(f"Blad polaczenia: {e}")
+                print(f"Connection error: {e}")
             break
 
         if response.status_code != 200:
             if verbose:
-                print(f"Blad HTTP {response.status_code}")
+                print(f"HTTP Error {response.status_code}")
             break
 
         data = response.json()
@@ -49,17 +49,17 @@ def fetch_pse_history(max_days: int = 30, verbose: bool = True) -> pd.DataFrame:
         fetched_pages += 1
 
         if verbose and fetched_pages % 5 == 0:
-            print(f"Pobrano {fetched_pages} stron ({len(all_records)} wierszy)...")
+            print(f"Fetched {fetched_pages} pages ({len(all_records)} rows)...")
 
-        time.sleep(0.1)  # Krotka pauza zapobiegajaca limitom zadan
+        time.sleep(0.1)  # Short pause to prevent rate limiting
 
     if verbose:
-        print(f"Zakonczono pobieranie! Lacznie pobrano {len(all_records)} rekordow.")
+        print(f"Fetching completed! Total records fetched: {len(all_records)}.")
 
     if not all_records:
         return pd.DataFrame()
 
-    # Tworzenie i czyszczenie DataFrame
+    # Create and clean DataFrame
     df = pd.DataFrame(all_records)
     selected_columns = ["dtime", "demand", "pv", "wi", "jg"]
     existing_cols = [c for c in selected_columns if c in df.columns]
@@ -75,7 +75,7 @@ def fetch_pse_history(max_days: int = 30, verbose: bool = True) -> pd.DataFrame:
 
     df = df.sort_values("dtime").reset_index(drop=True)
 
-    # Inzynieria cech OZE i zapotrzebowania netto
+    # Feature engineering for RES and net demand
     if "pv" in df.columns and "wi" in df.columns:
         df["oze_total"] = df["pv"] + df["wi"]
         if "demand" in df.columns:
@@ -85,14 +85,14 @@ def fetch_pse_history(max_days: int = 30, verbose: bool = True) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Pobieranie danych z API PSE")
-    parser.add_argument("--days", type=int, default=30, help="Liczba dni/stron do pobrania (domyslnie: 30)")
-    parser.add_argument("--output", type=str, default="data/raw/dane_energetyczne_pse.csv", help="Sciezka zapisu pliku CSV")
+    parser = argparse.ArgumentParser(description="Fetching data from PSE API")
+    parser.add_argument("--days", type=int, default=30, help="Number of days/pages to fetch (default: 30)")
+    parser.add_argument("--output", type=str, default="data/raw/pse_energy_data.csv", help="CSV file save path")
     args = parser.parse_args()
 
     df_result = fetch_pse_history(max_days=args.days)
     if not df_result.empty:
         df_result.to_csv(args.output, index=False)
-        print(f"Pomyslnie zapisano {len(df_result)} rekordow do '{args.output}'")
+        print(f"Successfully saved {len(df_result)} records to '{args.output}'")
     else:
-        print("Nie pobrano zadnych danych.")
+        print("No data fetched.")
