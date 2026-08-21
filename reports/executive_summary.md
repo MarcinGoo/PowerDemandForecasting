@@ -52,4 +52,4 @@ For full production deployment, the following architecture and steps are recomme
 ---
 
 **Report Author:** Marcin (@MarcinGoo)
-*Portfolio Project: Data Science & Energy Analytics*
+
