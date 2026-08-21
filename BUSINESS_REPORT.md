@@ -23,11 +23,15 @@ The analysis and modeling phases yielded highly accurate predictions, significan
 * **Prediction accuracy of change direction**: MDA = 78.87%.
 * **Forecast Error Reduction**: The XGBoost model reduced the forecast error by **-91.6%** compared to the Seasonal Naive benchmark.
 
+![Multi-Model Forecast Comparison](reports/figures/05_multi_model_forecast_comparison.png)
+
 ### Analytical Insights
 * **Non-linear time relationships**: The Machine Learning model successfully captured complex interactions between the time of day, the day of the week, and the dynamics of industry startup on Monday mornings.
 * **Key predictive drivers**: 
   - Thermodynamic and operational inertia of consumers (lag 1 hour) proved to be the most impactful feature (43.12% impact).
   - The profile of the same day in the previous week (lag 168 hours) was the second most important driver (31.97% impact).
+
+![XGBoost Feature Importance](reports/figures/04_xgboost_feature_importance.png)
 
 ### Financial Impact
 Reducing the uncertainty buffer by over 2,000 MW (the difference between the benchmark error and the XGBoost error) allows unnecessary conventional units operating at the technical minimum to be shut down. For a trading portfolio of 1,000 MW, reducing MAPE to 1.5% means a significant drop in the unbalanced volume, potentially reducing balancing costs by millions of zlotys annually.
@@ -41,6 +45,8 @@ To leverage these achievements, the solution should be transitioned into a produ
 ### Operational Module
 An operational forecasting module has already been built to generate load trajectories for the next 48 hours ahead with a 95% uncertainty interval. This module highlights critical hours (e.g., morning peaks) where maintaining an additional buffer is recommended.
 
+![Operational 48-Hour Forecast](reports/figures/07_future_forecast_48h.png)
+
 ### Recommended Architecture
 For full production deployment, the following architecture and steps are recommended:
 1. **Automated Data Pipeline**: Implement an Airflow data pipeline for automatic data retrieval every 15 minutes from the PSE API.
@@ -52,4 +58,3 @@ For full production deployment, the following architecture and steps are recomme
 ---
 
 **Report Author:** Marcin (@MarcinGoo)
-
