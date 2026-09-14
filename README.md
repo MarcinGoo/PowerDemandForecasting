@@ -51,27 +51,6 @@ PowerDemandForecasting/
 
 ---
 
-## Quick Start
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/MarcinGoo/PowerDemandForecasting.git
-cd PowerDemandForecasting
-
-# 2. Activate environment and install dependencies
-python -m venv venv
-source venv/bin/activate  # Windows: .\venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-
-# 3. Generate a 48h operational forecast
-python src/future_forecast.py
-
-# 4. Run interactive notebooks
-jupyter lab
-```
-
----
-
 ## Author
 
 **Marcin**
