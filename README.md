@@ -1,8 +1,5 @@
 # Power Demand Forecasting in KSE (PSE)
 
-[![pmdarima](https://img.shields.io/badge/pmdarima-2.1-red.svg)](https://alkaline-ml.com/pmdarima/)
-[![XGBoost](https://img.shields.io/badge/XGBoost-3.2-yellow.svg)](https://xgboost.readthedocs.io/)
-[![Business Report](https://img.shields.io/badge/Business_Report-brightgreen.svg)](BUSINESS_REPORT.md)
 
 A Data Science and Time Series Forecasting project dedicated to short-term electrical power demand forecasting in the Polish Power System (KSE), using actual transmission data from the Polish Power Grid (PSE).
 
