@@ -38,11 +38,8 @@ Reducing the uncertainty buffer by over 2,000 MW (the difference between the ben
 
 ---
 
-## 3. Next Steps and Implementation Recommendations
+## 3. Operational Module
 
-To leverage these achievements, the solution should be transitioned into a production MLOps environment. 
-
-### Operational Module
 An operational forecasting module has already been built to generate load trajectories for the next 48 hours ahead with a 95% uncertainty interval. This module highlights critical hours (e.g., morning peaks) where maintaining an additional buffer is recommended.
 
 ![Operational 48-Hour Forecast](reports/figures/07_future_forecast_48h.png)
