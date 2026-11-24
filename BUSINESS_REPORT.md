@@ -47,13 +47,6 @@ An operational forecasting module has already been built to generate load trajec
 
 ![Operational 48-Hour Forecast](reports/figures/07_future_forecast_48h.png)
 
-### Recommended Architecture
-For full production deployment, the following architecture and steps are recommended:
-1. **Automated Data Pipeline**: Implement an Airflow data pipeline for automatic data retrieval every 15 minutes from the PSE API.
-2. **Preprocessing & Feature Engineering**: Automate the 1-hour resampling, lag creation, and rolling window calculations.
-3. **Cyclic Retraining**: Schedule weekly model retraining in a Rolling Window with TimeSeriesSplit validation to adapt to changing seasonal behaviors.
-4. **Drift Monitoring**: Implement real-time tracking of the residual distribution using the Ljung-Box test and the MAPE metric to detect model degradation early.
-5. **Integration**: Connect the 48h forecast and confidence intervals directly to the SCADA System or Trading Dashboard for real-time decision-making.
 
 ---
 
